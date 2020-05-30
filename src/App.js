@@ -21,6 +21,8 @@ class BooksApp extends React.Component {
     booksWTR: [],
     showSearchPage: false
   }
+  
+
   componentDidMount() {
     BooksAPI.getAll().then((books) => {
       console.log(books); this.setState(() => ({
@@ -32,136 +34,25 @@ class BooksApp extends React.Component {
     })
   }
   //TODO:RESUME HERE
-  changeCR=async (book,changeto)=>
+  changeofshelf=async(book,changeto)=>
   {
-    if("currentlyReading".localeCompare(changeto)===0)
-    {
-      return;
-    }
-    await BooksAPI.update(book,changeto);
-    BooksAPI.get(book.id).then(book=>{
-    if("read".localeCompare(changeto)===0)
-    {
-    this.setState((currState)=>({
-      booksCR:currState.booksCR.filter(item=>item.id!==book.id),
-      booksR:[...currState.booksR,book]
-    }))
-   }
-   else if("wantToRead".localeCompare(changeto)===0)
-    {
-    this.setState((currState)=>({
-      booksCR:currState.booksCR.filter(item=>item.id!==book.id),
-      booksWTR:[...currState.booksWTR,book]
-    }))
-   }
-   else if("none".localeCompare(changeto)===0)
-   {
-    this.setState((currState)=>({
-      booksCR:currState.booksCR.filter(item=>item.id!==book.id),
-    }))
-   }
-  });
-  }
-  changeR=async (book,changeto)=>
-  {
-    if("read".localeCompare(changeto)===0)
-    {
-      return;
-    }
-    await BooksAPI.update(book,changeto);
-    BooksAPI.get(book.id).then(book=>{
-    if("currentlyReading".localeCompare(changeto)===0)
-    {
-    this.setState((currState)=>({
-      booksR:currState.booksR.filter(item=>item.id!==book.id),
-      booksCR:[...currState.booksCR,book]
-    }))
-   }
-   else if("wantToRead".localeCompare(changeto)===0)
-    {
-    this.setState((currState)=>({
-      booksR:currState.booksR.filter(item=>item.id!==book.id),
-      booksWTR:[...currState.booksWTR,book]
-    }))
-   }
-   else if("none".localeCompare(changeto)===0)
-   {
-    this.setState((currState)=>({
-      booksR:currState.booksR.filter(item=>item.id!==book.id),
-    }))
-   }
-  });
-    
-  }
-  changeWTR=async (book,changeto)=>
-  {
-    if("wantToRead".localeCompare(changeto)===0)
-    {
-      return;
-    }
-    await BooksAPI.update(book,changeto);
-    BooksAPI.get(book.id).then(book=>{
-    if("currentlyReading".localeCompare(changeto)===0)
-    {
-    this.setState((currState)=>({
-      booksWTR:currState.booksWTR.filter(item=>item.id!==book.id),
-      booksCR:[...currState.booksCR,book]
-    }))
-   }
-   else if("read".localeCompare(changeto)===0)
-    {
-    this.setState((currState)=>({
-      booksWTR:currState.booksWTR.filter(item=>item.id!==book.id),
-      booksR:[...currState.booksR,book]
-    }))
-   }
-   else if("none".localeCompare(changeto)===0)
-   {
-    this.setState((currState)=>({
-      booksWTR:currState.booksWTR.filter(item=>item.id!==book.id),
-    }))
-   }
-  });
-    
-  }
-  changeFromSearchpage=async(book,changeto)=>
-  {
-   await BooksAPI.update(book,changeto);
-    BooksAPI.get(book.id).then(book=>{
-    if("wantToRead".localeCompare(changeto)===0)
-    {
-      this.setState((currState)=>({
-        booksWTR:[...currState.booksWTR,book]
-      }))
-    }
-    if("currentlyReading".localeCompare(changeto)===0)
-    {
-    this.setState((currState)=>({
-      booksCR:[...currState.booksCR,book]
-    }))
-   }
-   else if("read".localeCompare(changeto)===0)
-    {
-    this.setState((currState)=>({
-      booksR:[...currState.booksR,book]
-    }))
-   }
-   else if("none".localeCompare(changeto)===0)
-   {
-    return;
-   }
-  });
-    
-
-
+     
+     await BooksAPI.update(book,changeto);
+      book.shelf=changeto;
+      let newstate=this.state.books.filter(b=>book.title!==b.title);
+      console.log("new:",newstate);
+      if(newstate){newstate.push(book);}
+      await this.setState((currState)=>({books:newstate})) 
   }
 
   render() {
 
     return (
       <div className="app">
-        <Route exact path="/search" render={()=>(
-          <SearchPage books={this.state.books} Change={this.changeFromSearchpage}></SearchPage>
+      
+        {/* {JSON.stringify(this.state)} */}
+        <Route exact path="/search" render={({history})=>(
+          <SearchPage books={this.state.books} Change={this.changeofshelf}></SearchPage>
         )}></Route>
         <Route exact path="/" render={()=>(
             <div className="list-books">
@@ -170,9 +61,9 @@ class BooksApp extends React.Component {
               </div>
               <div className="list-books-content">
                 <div>
-                  <CurrentlyReading booklist={this.state.booksCR} Change={this.changeCR} ></CurrentlyReading>
-                  <WanttoRead booklist={this.state.booksWTR} Change={this.changeWTR} ></WanttoRead>
-                  <Read booklist={this.state.booksR} Change={this.changeR}></Read>
+                  <CurrentlyReading booklist={this.state.books.filter(item => item.shelf === "currentlyReading")} Change={this.changeofshelf} ></CurrentlyReading>
+                  <WanttoRead booklist={this.state.books.filter(item => item.shelf === "wantToRead")} Change={this.changeofshelf} ></WanttoRead>
+                  <Read booklist={this.state.books.filter(item => item.shelf === "read")} Change={this.changeofshelf}></Read>
                 </div>
               </div>
               <div className="open-search">

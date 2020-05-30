@@ -39,8 +39,8 @@ class SearchPage extends Component
             {this.state.results && this.state.results.map?(
               <ol className="books-grid">
                 {this.state.results.map(item=>{
-                  this.props.books.map(book=>{if(book.id===item.id){item.shelf=book.shelf}})
-                  return(<Book onshelfchange={this.props.Change} book={item}></Book>)
+                  this.props.books?this.props.books.map(book=>{if(book.id===item.id){item.shelf=book.shelf}}):item=item
+                  return(<li key={item.id}><Book onshelfchange={this.props.Change} book={item}></Book></li>)
                   })}
               </ol>):(<div style={{textAlign:"center"}}>No matching results</div>)
             }  
